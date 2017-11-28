@@ -1,0 +1,42 @@
+VERSION 1.0 CLASS
+BEGIN
+  MultiUse = -1  'True
+END
+Attribute VB_Name = "Sheet1"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = True
+Sub httpRequest()
+
+    Dim httpReq As MSXML2.XMLHTTP
+    Dim DomDoc As MSXML2.DOMDocument
+    Dim targetURL As String
+    
+    targetURI = "http://maps.google.co.jp/maps/geo?key=&output=xml&q=ìåãûìsèaíJãÊç˜ãuí¨26-1"
+    
+    'HTTP GET
+    Set httpReq = CreateObject("MSXML2.XMLHTTP")
+    httpReq.Open "GET", targetURI, False
+    httpReq.send (Null)
+    
+    'XML PARSE
+    Set DomDoc = CreateObject("MSXML2.DOMDocument")
+
+    DomDoc.LoadXML (httpReq.responseText)
+    dumpDomDoc DomDoc.ChildNodes
+    
+    Set httpReq = Nothing
+    Set DomDoc = Nothing
+End Sub
+
+
+Sub dumpDomDoc(objNode)
+    Dim obj
+    For Each obj In objNode
+        MsgBox obj.ParentNode.nodeName & " : " & obj.NodeValue
+        If obj.HasChildNodes Then
+            dumpDomDoc obj.ChildNodes
+        End If
+    Next
+End Sub
