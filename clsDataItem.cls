@@ -16,9 +16,23 @@ Private Sub Class_Initialize()
     Set m_Fields = New Dictionary
 End Sub
 
-Public Sub Field(Name As String, value As Variant)
-    m_Fields.Add Name, value
+Public Sub Field(name As String, value As Variant)
+    If m_Fields.Exists(name) Then
+        m_Fields(name) = value
+    Else
+        m_Fields.Add name, value
+    End If
 End Sub
+
+Public Sub setFields(fields As Dictionary)
+    For Each key In fields
+        Field key, fields(key)
+    Next
+End Sub
+
+Public Function val(name As String) As Variant
+    val = m_Fields(name)
+End Function
 
 Property Let ncmb(ByVal ncmb As clsNCMB)
     Set m_NCMB = ncmb
@@ -31,23 +45,33 @@ End Property
 
 Public Function Save() As Boolean
     Dim result As Dictionary
+    Dim fields As Dictionary
+    Set fields = m_Fields
+    Debug.Print Join(fields.Keys, ",")
     If m_Fields.Exists("objectId") Then
-        Set result = m_NCMB.Request.PutRequest(m_DataStore.Name, m_Fields)
+        If fields.Exists("createDate") Then
+            fields.Remove ("createDate")
+        End If
+        If fields.Exists("updateDate") Then
+            fields.Remove ("updateDate")
+        End If
+        Set result = m_NCMB.Request.PutRequest(m_DataStore.name, m_Fields)
     Else
-        Set result = m_NCMB.Request.PostRequest(m_DataStore.Name, m_Fields)
+        Set result = m_NCMB.Request.PostRequest(m_DataStore.name, m_Fields)
     End If
     
     ' èàóùåãâ 
-    If result.Exists("objectId") Then
+    If result.Exists("code") Then
+        Save = False
+        ' {"code":"E404005","error":"No such application."}
+        m_Error = New clsError
+        m_Error.Code = result("code")
+        m_Error.Message = result("error")
+    Else
         Save = True
         For Each key In result
             m_Fields.Add key, result(key)
         Next
-    Else
-        Save = False
-        m_Error = New clsError
-        m_Error.Code = result("code")
-        m_Error.Message = result("error")
     End If
 End Function
 

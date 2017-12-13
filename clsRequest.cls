@@ -16,55 +16,77 @@ Property Let ncmb(ByVal ncmb As clsNCMB)
     Set m_NCMB = ncmb
 End Property
 
-Public Function GetRequest() As Boolean
-    GetRequest = True
-    
+Public Function GetRequest(className As String, queries As Object) As Dictionary
+    Set GetRequest = SendRequest("GET", className, New Dictionary, queries)
 End Function
 
 Public Function PostRequest(className As String, fields As Object) As Dictionary
-    Set PostRequest = SendRequest("POST", className, fields)
+    Set PostRequest = SendRequest("POST", className, fields, New Dictionary)
 End Function
 
 Public Function PutRequest(className As String, fields As Object) As Dictionary
-    Set PutRequest = SendRequest("POST", className, fields)
+    Set PutRequest = SendRequest("PUT", className, fields, New Dictionary)
 End Function
 
 Public Function DeleteRequest() As Boolean
     DeleteRequest = True
 End Function
 
-Private Function SendRequest(method As String, className As String, fields As Object) As Dictionary
+Private Function SendRequest(method As String, className As String, fields As Dictionary, queries As Dictionary) As Dictionary
     Dim path As String
     path = "/" & m_NCMB.Version & "/classes/" & className
+    If method = "PUT" Then
+        path = path & "/" & fields("objectId")
+        fields.Remove ("objectId")
+    End If
+    
     Dim signature As String
     Dim thisTime As Date
     thisTime = Date
-    signature = generateSignature(path, method, New Dictionary, thisTime)
+    signature = generateSignature(path, method, queries, thisTime)
         
     Dim httpReq As Object
-    Set httpReq = CreateObject("MSXML2.XMLHTTP")
+    Set httpReq = CreateObject("Microsoft.XMLHTTP")
     Dim url As String
     url = m_NCMB.Protocol & "//" & m_NCMB.Fqdn & path
+    If method = "GET" Then
+        url = url & "?" & Dic2Encode(queries, True)
+    End If
     httpReq.Open method, url, False
     
     httpReq.setRequestHeader "X-NCMB-Application-Key", m_NCMB.ApplicationKey
     httpReq.setRequestHeader "X-NCMB-Timestamp", UtcConverter.ConvertToIso(thisTime)
     httpReq.setRequestHeader "X-NCMB-Signature", signature
     httpReq.setRequestHeader "Content-Type", "application/json"
-    httpReq.send (JsonConverter.ConvertToJson(fields))
     
-    Dim Json As Object
+    Debug.Print JsonConverter.ConvertToJson(fields)
+    If method = "GET" Then
+        httpReq.send
+    Else
+        httpReq.send (JsonConverter.ConvertToJson(fields))
+    End If
+    
+    Dim json As Object
+    Debug.Print (httpReq.responseText)
     Set SendRequest = JsonConverter.ParseJson(httpReq.responseText)
 End Function
 
-Public Function Dic2Encode(Data As Object) As String
+Public Function Dic2Encode(Data As Object, encode As Boolean) As String
     Dim ary() As String
     i = 0
     For Each key In Data
         ReDim Preserve ary(i)
-        ary(i) = key & "=" & Data(key)
+        If VarType(Data(key)) = vbObject Then
+            Dim value As String
+            value = JsonConverter.ConvertToJson(Data(key))
+        Else
+            value = Data(key)
+        End If
+        If encode Then
+            value = Application.WorksheetFunction.encodeUrl(value)
+        End If
+        ary(i) = key & "=" & value
         i = i + 1
-        Debug.Print (key & "=" & Data(key))
     Next
     Dic2Encode = Join(ary, "&")
 End Function
@@ -79,9 +101,14 @@ Public Function generateSignature(path As String, method As String, queries As D
     Data.Add "X-NCMB-Application-Key", m_NCMB.ApplicationKey
     Data.Add "X-NCMB-Timestamp", UtcConverter.ConvertToIso(timestamp)
     
+    
     Dim i As Integer
     For Each key In queries
-        Data.Add key, Application.WorksheetFunction.encodeUrl(queries(key))
+        If VarType(queries(key)) = vbObject Then
+            Data.Add key, Application.WorksheetFunction.encodeUrl(JsonConverter.ConvertToJson(queries(key)))
+        Else
+            Data.Add key, Application.WorksheetFunction.encodeUrl(queries(key))
+        End If
     Next key
     
     Call DicSort(Data)
@@ -90,10 +117,10 @@ Public Function generateSignature(path As String, method As String, queries As D
     sigStr(0) = method
     sigStr(1) = m_NCMB.Fqdn
     sigStr(2) = path
-    sigStr(3) = Dic2Encode(Data)
+    sigStr(3) = Dic2Encode(Data, False)
     
+    Debug.Print Join(sigStr, vbLf)
     generateSignature = Base64_HMACSHA256(Join(sigStr, vbLf), m_NCMB.ClientKey)
-     
 End Function
 
 

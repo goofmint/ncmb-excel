@@ -165,7 +165,7 @@ Private Type json_Options
     ' The JSON standard requires object keys to be quoted (" or '), use this option to allow unquoted keys
     AllowUnquotedKeys As Boolean
 
-    ' The solidus (/) is not required to be escaped, use this option to escape them as €/ in ConvertToJson
+    ' The solidus (/) is not required to be escaped, use this option to escape them as \/ in ConvertToJson
     EscapeSolidus As Boolean
 End Type
 Public JsonOptions As json_Options
@@ -495,9 +495,9 @@ Private Function json_ParseObject(json_String As String, ByRef json_Index As Lon
             json_Key = json_ParseKey(json_String, json_Index)
             json_NextChar = json_Peek(json_String, json_Index)
             If json_NextChar = "[" Or json_NextChar = "{" Then
-                Set json_ParseObject.Item(json_Key) = json_ParseValue(json_String, json_Index)
+                Set json_ParseObject.item(json_Key) = json_ParseValue(json_String, json_Index)
             Else
-                json_ParseObject.Item(json_Key) = json_ParseValue(json_String, json_Index)
+                json_ParseObject.item(json_Key) = json_ParseValue(json_String, json_Index)
             End If
         Loop
     End If
@@ -572,13 +572,13 @@ Private Function json_ParseString(json_String As String, ByRef json_Index As Lon
         json_Char = VBA.Mid$(json_String, json_Index, 1)
 
         Select Case json_Char
-        Case "€"
-            ' Escaped string, €€, or €/
+        Case "\"
+            ' Escaped string, \\, or \/
             json_Index = json_Index + 1
             json_Char = VBA.Mid$(json_String, json_Index, 1)
 
             Select Case json_Char
-            Case """", "€", "/", "'"
+            Case """", "\", "/", "'"
                 json_BufferAppend json_buffer, json_Char, json_BufferPosition, json_BufferLength
                 json_Index = json_Index + 1
             Case "b"
@@ -597,10 +597,10 @@ Private Function json_ParseString(json_String As String, ByRef json_Index As Lon
                 json_BufferAppend json_buffer, vbTab, json_BufferPosition, json_BufferLength
                 json_Index = json_Index + 1
             Case "u"
-                ' Unicode character escape (e.g. €u00a9 = Copyright)
+                ' Unicode character escape (e.g. \u00a9 = Copyright)
                 json_Index = json_Index + 1
                 json_Code = VBA.Mid$(json_String, json_Index, 4)
-                json_BufferAppend json_buffer, VBA.ChrW(VBA.Val("&h" + json_Code)), json_BufferPosition, json_BufferLength
+                json_BufferAppend json_buffer, VBA.ChrW(VBA.val("&h" + json_Code)), json_BufferPosition, json_BufferLength
                 json_Index = json_Index + 4
             End Select
         Case json_Quote
@@ -640,7 +640,7 @@ Private Function json_ParseNumber(json_String As String, ByRef json_Index As Lon
                 json_ParseNumber = json_Value
             Else
                 ' VBA.Val does not use regional settings, so guard for comma is not needed
-                json_ParseNumber = VBA.Val(json_Value)
+                json_ParseNumber = VBA.val(json_Value)
             End If
             Exit Function
         End If
@@ -690,7 +690,7 @@ End Function
 
 Private Function json_Encode(ByVal json_Text As Variant) As String
     ' Reference: http://www.ietf.org/rfc/rfc4627.txt
-    ' Escape: ", €, /, backspace, form feed, line feed, carriage return, tab
+    ' Escape: ", \, /, backspace, form feed, line feed, carriage return, tab
     Dim json_Index As Long
     Dim json_Char As String
     Dim json_AscCode As Long
@@ -709,38 +709,38 @@ Private Function json_Encode(ByVal json_Text As Variant) As String
             json_AscCode = json_AscCode + 65536
         End If
 
-        ' From spec, ", €, and control characters must be escaped (solidus is optional)
+        ' From spec, ", \, and control characters must be escaped (solidus is optional)
 
         Select Case json_AscCode
         Case 34
-            ' " -> 34 -> €"
-            json_Char = "€"""
+            ' " -> 34 -> \"
+            json_Char = "\"""
         Case 92
-            ' € -> 92 -> €€
-            json_Char = "€€"
+            ' \ -> 92 -> \\
+            json_Char = "\\"
         Case 47
-            ' / -> 47 -> €/ (optional)
+            ' / -> 47 -> \/ (optional)
             If JsonOptions.EscapeSolidus Then
-                json_Char = "€/"
+                json_Char = "\/"
             End If
         Case 8
-            ' backspace -> 8 -> €b
-            json_Char = "€b"
+            ' backspace -> 8 -> \b
+            json_Char = "\b"
         Case 12
-            ' form feed -> 12 -> €f
-            json_Char = "€f"
+            ' form feed -> 12 -> \f
+            json_Char = "\f"
         Case 10
-            ' line feed -> 10 -> €n
-            json_Char = "€n"
+            ' line feed -> 10 -> \n
+            json_Char = "\n"
         Case 13
-            ' carriage return -> 13 -> €r
-            json_Char = "€r"
+            ' carriage return -> 13 -> \r
+            json_Char = "\r"
         Case 9
-            ' tab -> 9 -> €t
-            json_Char = "€t"
+            ' tab -> 9 -> \t
+            json_Char = "\t"
         Case 0 To 31, 127 To 65535
             ' Non-ascii characters -> convert to 4-digit hex
-            json_Char = "€u" & VBA.Right$("0000" & VBA.Hex$(json_AscCode), 4)
+            json_Char = "\u" & VBA.Right$("0000" & VBA.Hex$(json_AscCode), 4)
         End Select
 
         json_BufferAppend json_buffer, json_Char, json_BufferPosition, json_BufferLength
@@ -868,7 +868,7 @@ Private Sub json_BufferAppend(ByRef json_buffer As String, _
             End If
         Loop
 
-        json_buffer = json_buffer & VBA.Space$((json_TemporaryLength - json_BufferLength) € 2)
+        json_buffer = json_buffer & VBA.Space$((json_TemporaryLength - json_BufferLength) \ 2)
         json_BufferLength = json_TemporaryLength
     End If
 
@@ -887,7 +887,7 @@ Private Function json_BufferToString(ByRef json_buffer As String, ByVal json_Buf
     json_BufferToString = json_buffer
 #Else
     If json_BufferPosition > 0 Then
-        json_BufferToString = VBA.Left$(json_buffer, json_BufferPosition € 2)
+        json_BufferToString = VBA.Left$(json_buffer, json_BufferPosition \ 2)
     End If
 #End If
 End Function
@@ -1034,7 +1034,7 @@ Public Function ParseIso(utc_IsoString As String) As Date
                     utc_Offset = TimeSerial(VBA.CInt(utc_OffsetParts(0)), VBA.CInt(utc_OffsetParts(1)), 0)
                 Case 2
                     ' VBA.Val does not use regional settings, use for seconds to avoid decimal/comma issues
-                    utc_Offset = TimeSerial(VBA.CInt(utc_OffsetParts(0)), VBA.CInt(utc_OffsetParts(1)), Int(VBA.Val(utc_OffsetParts(2))))
+                    utc_Offset = TimeSerial(VBA.CInt(utc_OffsetParts(0)), VBA.CInt(utc_OffsetParts(1)), Int(VBA.val(utc_OffsetParts(2))))
                 End Select
 
                 If utc_NegativeOffset Then: utc_Offset = -utc_Offset
@@ -1050,7 +1050,7 @@ Public Function ParseIso(utc_IsoString As String) As Date
             ParseIso = ParseIso + VBA.TimeSerial(VBA.CInt(utc_TimeParts(0)), VBA.CInt(utc_TimeParts(1)), 0)
         Case 2
             ' VBA.Val does not use regional settings, use for seconds to avoid decimal/comma issues
-            ParseIso = ParseIso + VBA.TimeSerial(VBA.CInt(utc_TimeParts(0)), VBA.CInt(utc_TimeParts(1)), Int(VBA.Val(utc_TimeParts(2))))
+            ParseIso = ParseIso + VBA.TimeSerial(VBA.CInt(utc_TimeParts(0)), VBA.CInt(utc_TimeParts(1)), Int(VBA.val(utc_TimeParts(2))))
         End Select
 
         ParseIso = ParseUtc(ParseIso)

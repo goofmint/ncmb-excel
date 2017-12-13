@@ -23,8 +23,16 @@ Sub Test()
     
     Dim dataClass As clsDataStore
     
-    Set dataClass = ncmb.dataStore("Data")
+    Set dataClass = ncmb.dataStore("AA7")
     
+    ' �f�[�^���ۑ�����
+    ' saveDataStore (dataClass)
+    
+    ' �f�[�^����
+    ' searchDataStore (dataClass)
+    
+    ' updateDataStore (dataClass)
+    ' �f�[�^�X�g�A�̕ۑ�
     Dim dataItem As clsDataItem
     Set dataItem = dataClass.newData
     dataItem.Field "message", "Hello World"
@@ -34,4 +42,35 @@ Sub Test()
         Debug.Print ("�ۑ����s")
     End If
     
+    dataItem.Field "message", "Update!"
+    If dataItem.Save() Then
+        Debug.Print ("�X�V�ł��܂���")
+    Else
+        Debug.Print ("�X�V���s")
+    End If
+    
+End Sub
+
+Sub updateDataStore(dataClass As Variant)
+    
+End Sub
+
+Sub searchDataStore(dataClass As Variant)
+    dataClass.equalTo "message", "Hello World"
+    dataClass.greaterThan "Integer", 10
+    Dim dataItems() As clsDataItem
+    dataItems = dataClass.fetchAll()
+    Debug.Print dataItems(0).val("Integer")
+End Sub
+
+Sub saveDataStore(dataClass As Variant)
+    ' �f�[�^�X�g�A�̕ۑ�
+    Dim dataItem As clsDataItem
+    Set dataItem = dataClass.newData
+    dataItem.Field "message", "Hello World"
+    If dataItem.Save() Then
+        Debug.Print ("�ۑ��ł��܂���")
+    Else
+        Debug.Print ("�ۑ����s")
+    End If
 End Sub

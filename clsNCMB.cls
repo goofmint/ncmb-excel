@@ -51,10 +51,10 @@ Property Let ClientKey(ByVal ClientKey As String)
     m_ClientKey = ClientKey
 End Property
 
-Public Function dataStore(Name As String) As clsDataStore
+Public Function dataStore(name As String) As clsDataStore
     Set dataStore = New clsDataStore
     dataStore.ncmb = Me
-    dataStore.Name = Name
+    dataStore.name = name
 End Function
 
 Public Property Get Version() As String
