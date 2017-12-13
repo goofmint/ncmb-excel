@@ -46,6 +46,7 @@ End Property
 Public Function Save() As Boolean
     Dim result As Dictionary
     Dim fields As Dictionary
+    Dim objectId As String
     Set fields = m_Fields
     Debug.Print Join(fields.Keys, ",")
     If m_Fields.Exists("objectId") Then
@@ -55,7 +56,9 @@ Public Function Save() As Boolean
         If fields.Exists("updateDate") Then
             fields.Remove ("updateDate")
         End If
+        objectId = m_Fields("objectId")
         Set result = m_NCMB.Request.PutRequest(m_DataStore.name, m_Fields)
+        result.Add "objectId", objectId
     Else
         Set result = m_NCMB.Request.PostRequest(m_DataStore.name, m_Fields)
     End If
@@ -72,6 +75,20 @@ Public Function Save() As Boolean
         For Each key In result
             m_Fields.Add key, result(key)
         Next
+    End If
+End Function
+
+Public Function Delete() As Boolean
+    Delete = False
+    If m_Fields.Exists("objectId") Then
+        Set result = m_NCMB.Request.DeleteRequest(m_DataStore.name, m_Fields)
+        If result.Exists("code") Then
+            m_Error = New clsError
+            m_Error.Code = result("code")
+            m_Error.Message = result("error")
+        Else
+            Delete = True
+        End If
     End If
 End Function
 

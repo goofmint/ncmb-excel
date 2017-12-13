@@ -49,6 +49,12 @@ Sub Test()
         Debug.Print ("�X�V���s")
     End If
     
+    If dataItem.Delete() Then
+        Debug.Print ("�폜����")
+    Else
+        Debug.Print ("�폜���s")
+    End If
+    
 End Sub
 
 Sub updateDataStore(dataClass As Variant)

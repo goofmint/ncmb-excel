@@ -16,26 +16,26 @@ Property Let ncmb(ByVal ncmb As clsNCMB)
     Set m_NCMB = ncmb
 End Property
 
-Public Function GetRequest(className As String, queries As Object) As Dictionary
+Public Function GetRequest(className As String, queries As Dictionary) As Dictionary
     Set GetRequest = SendRequest("GET", className, New Dictionary, queries)
 End Function
 
-Public Function PostRequest(className As String, fields As Object) As Dictionary
+Public Function PostRequest(className As String, fields As Dictionary) As Dictionary
     Set PostRequest = SendRequest("POST", className, fields, New Dictionary)
 End Function
 
-Public Function PutRequest(className As String, fields As Object) As Dictionary
+Public Function PutRequest(className As String, fields As Dictionary) As Dictionary
     Set PutRequest = SendRequest("PUT", className, fields, New Dictionary)
 End Function
 
-Public Function DeleteRequest() As Boolean
-    DeleteRequest = True
+Public Function DeleteRequest(className As String, fields As Dictionary) As Dictionary
+    Set DeleteRequest = SendRequest("DELETE", className, fields, New Dictionary)
 End Function
 
 Private Function SendRequest(method As String, className As String, fields As Dictionary, queries As Dictionary) As Dictionary
     Dim path As String
     path = "/" & m_NCMB.Version & "/classes/" & className
-    If method = "PUT" Then
+    If method = "PUT" Or method = "DELETE" Then
         path = path & "/" & fields("objectId")
         fields.Remove ("objectId")
     End If
@@ -67,8 +67,11 @@ Private Function SendRequest(method As String, className As String, fields As Di
     End If
     
     Dim json As Object
-    Debug.Print (httpReq.responseText)
-    Set SendRequest = JsonConverter.ParseJson(httpReq.responseText)
+    If method = "DELETE" And httpReq.responseText = "" Then
+        Set SendRequest = New Dictionary
+    Else
+        Set SendRequest = JsonConverter.ParseJson(httpReq.responseText)
+    End If
 End Function
 
 Public Function Dic2Encode(Data As Object, encode As Boolean) As String

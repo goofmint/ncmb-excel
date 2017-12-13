@@ -54,7 +54,7 @@ dataItems = dataClass.fetchAll()
 Debug.Print dataItems(0).val("Integer")
 ```
 
-### データストアの検索
+### データストアの更新
 
 ```vb
 Dim dataItem As clsDataItem
@@ -71,6 +71,25 @@ If dataItem.Save() Then
     Debug.Print ("更新されました")
 Else
     Debug.Print ("更新失敗")
+End If
+```
+
+## データストアの削除
+
+```vb
+Dim dataItem As clsDataItem
+Set dataItem = dataClass.newData
+dataItem.Field "message", "Hello World"
+If dataItem.Save() Then
+  Debug.Print ("保存できました")
+Else
+  Debug.Print ("保存失敗")
+End If
+
+If dataItem.Delete() Then
+    Debug.Print ("削除されました")
+Else
+    Debug.Print ("削除失敗")
 End If
 ```
 
