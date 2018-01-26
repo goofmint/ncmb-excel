@@ -16,7 +16,7 @@ Private Sub Class_Initialize()
     Set m_Fields = New Dictionary
 End Sub
 
-Public Sub Field(name As String, value As Variant)
+Public Sub Field(name As Variant, value As Variant)
     If m_Fields.Exists(name) Then
         m_Fields(name) = value
     Else

@@ -34,7 +34,11 @@ End Function
 
 Private Function SendRequest(method As String, className As String, fields As Dictionary, queries As Dictionary) As Dictionary
     Dim path As String
-    path = "/" & m_NCMB.Version & "/classes/" & className
+    If className = "login" Then
+        path = "/" & m_NCMB.Version & "/" & className
+    Else
+        path = "/" & m_NCMB.Version & "/classes/" & className
+    End If
     If method = "PUT" Or method = "DELETE" Then
         path = path & "/" & fields("objectId")
         fields.Remove ("objectId")
@@ -46,7 +50,7 @@ Private Function SendRequest(method As String, className As String, fields As Di
     signature = generateSignature(path, method, queries, thisTime)
         
     Dim httpReq As Object
-    Set httpReq = CreateObject("Microsoft.XMLHTTP")
+    Set httpReq = CreateObject("MSXML2.ServerXMLHTTP.6.0")
     Dim url As String
     url = m_NCMB.Protocol & "//" & m_NCMB.Fqdn & path
     If method = "GET" Then
@@ -54,12 +58,16 @@ Private Function SendRequest(method As String, className As String, fields As Di
     End If
     httpReq.Open method, url, False
     
+    If m_NCMB.SessionToken <> "" Then
+        Debug.Print m_NCMB.SessionToken
+        httpReq.setRequestHeader "X-NCMB-Apps-Session-Token", m_NCMB.SessionToken
+    End If
+    
     httpReq.setRequestHeader "X-NCMB-Application-Key", m_NCMB.ApplicationKey
     httpReq.setRequestHeader "X-NCMB-Timestamp", UtcConverter.ConvertToIso(thisTime)
     httpReq.setRequestHeader "X-NCMB-Signature", signature
     httpReq.setRequestHeader "Content-Type", "application/json"
-    
-    Debug.Print JsonConverter.ConvertToJson(fields)
+        
     If method = "GET" Then
         httpReq.send
     Else
@@ -122,7 +130,7 @@ Public Function generateSignature(path As String, method As String, queries As D
     sigStr(2) = path
     sigStr(3) = Dic2Encode(Data, False)
     
-    Debug.Print Join(sigStr, vbLf)
+    ' Debug.Print Join(sigStr, vbLf)
     generateSignature = Base64_HMACSHA256(Join(sigStr, vbLf), m_NCMB.ClientKey)
 End Function
 

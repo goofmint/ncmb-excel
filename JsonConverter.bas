@@ -495,9 +495,9 @@ Private Function json_ParseObject(json_String As String, ByRef json_Index As Lon
             json_Key = json_ParseKey(json_String, json_Index)
             json_NextChar = json_Peek(json_String, json_Index)
             If json_NextChar = "[" Or json_NextChar = "{" Then
-                Set json_ParseObject.item(json_Key) = json_ParseValue(json_String, json_Index)
+                Set json_ParseObject.Item(json_Key) = json_ParseValue(json_String, json_Index)
             Else
-                json_ParseObject.item(json_Key) = json_ParseValue(json_String, json_Index)
+                json_ParseObject.Item(json_Key) = json_ParseValue(json_String, json_Index)
             End If
         Loop
     End If

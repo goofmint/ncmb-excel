@@ -23,6 +23,10 @@ Private m_ApplicationKey As String
 Private m_ClientKey As String
 Private m_Request As clsRequest
 
+Private m_User As clsUser
+
+Private m_SessionToken As String
+
 Private Sub Class_Initialize()
     m_Version = "2013-09-01"
     m_Fqdn = "mb.api.cloud.nifty.com"
@@ -34,6 +38,8 @@ Private Sub Class_Initialize()
     m_SignatureVersion = 2
     Set m_Request = New clsRequest
     m_Request.ncmb = Me
+    Set m_User = New clsUser
+    m_User.ncmb = Me
 End Sub
 
 
@@ -50,6 +56,19 @@ End Property
 Property Let ClientKey(ByVal ClientKey As String)
     m_ClientKey = ClientKey
 End Property
+
+Property Let SessionToken(ByVal SessionToken As String)
+    m_SessionToken = SessionToken
+End Property
+
+Public Property Get SessionToken() As String
+    SessionToken = m_SessionToken
+End Property
+
+Public Property Get User() As clsUser
+    Set User = m_User
+End Property
+
 
 Public Function dataStore(name As String) As clsDataStore
     Set dataStore = New clsDataStore

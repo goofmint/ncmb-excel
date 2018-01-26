@@ -11,7 +11,7 @@ Sub Test()
     Dim ApplicationKey As String
     Dim ClientKey As String
     
-    ApplicationKey = "YOUR_APPLICATION_KEY"
+    ApplicationKey = "d288714a5a801f4ccaaac99c87df41d35e38b5804a9ecbcd2026c1901e914fc0"
     ClientKey = "YOUR_CLIENT_KEY"
     
     Dim ncmb As clsNCMB
@@ -25,34 +25,34 @@ Sub Test()
     
     Set dataClass = ncmb.dataStore("AA7")
     
-    ' ï¿½fï¿½[ï¿½^ï¿½ï¿½ï¿½Û‘ï¿½ï¿½ï¿½ï¿½ï¿½
+    ' ƒf[ƒ^‚ğ•Û‘¶‚·‚é
     ' saveDataStore (dataClass)
     
-    ' ï¿½fï¿½[ï¿½^ï¿½ï¿½ï¿½ï¿½
+    ' ƒf[ƒ^ŒŸõ
     ' searchDataStore (dataClass)
     
     ' updateDataStore (dataClass)
-    ' ï¿½fï¿½[ï¿½^ï¿½Xï¿½gï¿½Aï¿½Ì•Û‘ï¿½
+    ' ƒf[ƒ^ƒXƒgƒA‚Ì•Û‘¶
     Dim dataItem As clsDataItem
     Set dataItem = dataClass.newData
     dataItem.Field "message", "Hello World"
     If dataItem.Save() Then
-        Debug.Print ("ï¿½Û‘ï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½")
+        Debug.Print ("•Û‘¶‚Å‚«‚Ü‚µ‚½")
     Else
-        Debug.Print ("ï¿½Û‘ï¿½ï¿½ï¿½ï¿½s")
+        Debug.Print ("•Û‘¶¸”s")
     End If
     
     dataItem.Field "message", "Update!"
     If dataItem.Save() Then
-        Debug.Print ("ï¿½Xï¿½Vï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½")
+        Debug.Print ("XV‚Å‚«‚Ü‚µ‚½")
     Else
-        Debug.Print ("ï¿½Xï¿½Vï¿½ï¿½ï¿½s")
+        Debug.Print ("XV¸”s")
     End If
     
     If dataItem.Delete() Then
-        Debug.Print ("ï¿½íœï¿½ï¿½ï¿½ï¿½")
+        Debug.Print ("íœ¬Œ÷")
     Else
-        Debug.Print ("ï¿½íœï¿½ï¿½ï¿½s")
+        Debug.Print ("íœ¸”s")
     End If
     
 End Sub
@@ -70,13 +70,108 @@ Sub searchDataStore(dataClass As Variant)
 End Sub
 
 Sub saveDataStore(dataClass As Variant)
-    ' ï¿½fï¿½[ï¿½^ï¿½Xï¿½gï¿½Aï¿½Ì•Û‘ï¿½
+    ' ƒf[ƒ^ƒXƒgƒA‚Ì•Û‘¶
     Dim dataItem As clsDataItem
     Set dataItem = dataClass.newData
     dataItem.Field "message", "Hello World"
     If dataItem.Save() Then
-        Debug.Print ("ï¿½Û‘ï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½")
+        Debug.Print ("•Û‘¶‚Å‚«‚Ü‚µ‚½")
     Else
-        Debug.Print ("ï¿½Û‘ï¿½ï¿½ï¿½ï¿½s")
+        Debug.Print ("•Û‘¶¸”s")
     End If
 End Sub
+
+Sub saveData()
+    Dim ApplicationKey As String
+    Dim ClientKey As String
+    
+    ApplicationKey = "YOUR_APPLICATION_KEY"
+    ClientKey = "YOUR_CLIENT_KEY"
+    
+    Dim ncmb As clsNCMB
+    Set ncmb = New clsNCMB
+    
+    ncmb.ApplicationKey = ApplicationKey
+    ncmb.ClientKey = ClientKey
+    
+    
+    Dim dataClass As clsDataStore
+    
+    Set dataClass = ncmb.dataStore("TestClass")
+    Dim dataItem As clsDataItem
+    
+    Dim lastRow As Integer
+    lastRow = Cells(Rows.Count, 1).End(xlUp).Row
+    
+    Dim workSheet As workSheet
+    Set workSheet = ThisWorkbook.Worksheets("Sheet1")
+    
+    For i = 2 To lastRow
+        Set dataItem = dataClass.newData
+        dataItem.Field "objectId", workSheet.Cells(i, 1).value
+        dataItem.Field "message", workSheet.Cells(i, 2).value
+        dataItem.Field "count", workSheet.Cells(i, 3).value
+        dataItem.Save
+    Next
+End Sub
+
+Sub LoadData()
+    Dim ApplicationKey As String
+    Dim ClientKey As String
+    
+    ApplicationKey = "YOUR_APPLICATION_KEY"
+    ClientKey = "YOUR_CLIENT_KEY"
+    
+    Dim ncmb As clsNCMB
+    Set ncmb = New clsNCMB
+    
+    ncmb.ApplicationKey = ApplicationKey
+    ncmb.ClientKey = ClientKey
+    
+    
+    Dim dataClass As clsDataStore
+    
+    Set dataClass = ncmb.dataStore("TestClass")
+    
+    Dim dataItems() As clsDataItem
+    dataItems = dataClass.fetchAll()
+    
+    Dim dataItem As clsDataItem
+    Dim workSheet As workSheet
+    Set workSheet = ThisWorkbook.Worksheets("Sheet1")
+    
+    For i = 0 To UBound(dataItems) - 1
+      Set dataItem = dataItems(i)
+      workSheet.Cells(i + 2, 1).value = dataItem.val("objectId")
+      workSheet.Cells(i + 2, 2).value = dataItem.val("message")
+      workSheet.Cells(i + 2, 3).value = dataItem.val("count")
+    Next
+End Sub
+
+Sub login()
+    Dim ApplicationKey As String
+    Dim ClientKey As String
+    
+    ApplicationKey = "YOUR_APPLICATION_KEY"
+    ClientKey = "YOUR_CLIENT_KEY"
+    
+    Dim ncmb As clsNCMB
+    Set ncmb = New clsNCMB
+    
+    ncmb.ApplicationKey = ApplicationKey
+    ncmb.ClientKey = ClientKey
+    
+    Dim dataClass As clsDataStore
+    Set dataClass = ncmb.dataStore("TestExcel")
+    Dim dataItems() As clsDataItem
+    dataItems = dataClass.fetchAll()
+    Debug.Print UBound(dataItems)
+
+    Dim result As clsDataItem
+    Set result = ncmb.User.login("ExcelUser", "ExcelUser")
+    
+    dataItems = dataClass.fetchAll()
+    Debug.Print UBound(dataItems)
+
+End Sub
+
