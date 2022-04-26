@@ -29,9 +29,9 @@ Private m_SessionToken As String
 
 Private Sub Class_Initialize()
     m_Version = "2013-09-01"
-    m_Fqdn = "mb.api.cloud.nifty.com"
+    m_Fqdn = "mbaas.api.nifcloud.com"
     m_ScriptVersion = "2015-09-01"
-    m_ScriptFqdn = "script.mb.api.cloud.nifty.com"
+    m_ScriptFqdn = "script.mbaas.api.nifcloud.com"
     m_Port = 443
     m_Protocol = "https:"
     m_SignatureMethod = "HmacSHA256"
